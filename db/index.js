@@ -2,12 +2,13 @@ const Sequelize = require('sequelize');
 const db = new Sequelize(process.env.DATABASE_URL || 'postgres://localhost/acme_employees');
 const { STRING } = Sequelize;
 
+const faker = require('faker');
+
 
 const Department = db.define('department', {
   name: {
     type: STRING,
     allowNull: false,
-    unique: true
   },
 })
 
@@ -15,7 +16,6 @@ const Employee = db.define('employee', {
   name: {
     type: STRING,
     allowNull: false,
-    unique: true
   },
 })
 
@@ -25,11 +25,26 @@ Employee.belongsTo(Department);
 
 const syncAndSeed = async () => {
   await db.sync({ force: true });
-  const [IT, HR, MARKETING] = await Promise.all([
-    Department.create({name: 'IT'}),
-    Department.create({name: 'HR'}),
-    Department.create({name: 'MARKETING'}),
-  ])
+  const departmentPromises = [];
+  const employeePromises = [];
+
+  while(departmentPromises.length < 5){
+    departmentPromises.push(
+      Department.create({
+        name: faker.commerce.department()
+      })
+    )
+  }
+
+  while(employeePromises.length < 50){
+    employeePromises.push(
+      Employee.create({
+        name: faker.name.firstName()
+      })
+    )
+  }
+  await Promise.all(departmentPromises);
+  await Promise.all(employeePromises);
 }
 
 module.exports = {
