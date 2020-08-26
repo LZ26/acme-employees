@@ -28,6 +28,7 @@ const syncAndSeed = async () => {
   const departmentPromises = [];
   const employeePromises = [];
 
+
   while(departmentPromises.length < 5){
     departmentPromises.push(
       Department.create({
@@ -39,18 +40,17 @@ const syncAndSeed = async () => {
   while(employeePromises.length < 50){
     employeePromises.push(
       Employee.create({
-        name: faker.name.firstName()
+        name: faker.name.firstName(),
       })
     )
   }
-  await Promise.all(departmentPromises);
-  await Promise.all(employeePromises);
+  await Promise.all([departmentPromises, employeePromises]);
+
 }
 
 module.exports = {
-  models: {
+    db,
     Department,
-    Employee
-  },
-  syncAndSeed
+    Employee,
+    syncAndSeed
 }

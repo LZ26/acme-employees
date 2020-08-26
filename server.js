@@ -2,8 +2,7 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const db = require('./db');
-const { Department, Employee } = db.models;
-
+const { Department, Employee } = require('./db');
 
 
 app.use(require('body-parser').json());
@@ -14,9 +13,6 @@ app.get('/', (req, res, next) => res.sendFile(path.join(__dirname, 'index.html')
 app.get('/api/employees', async (req, res, next) => {
   try {
     const employees = await Employee.findAll({
-      include: [{
-        model: Department
-      }]
     });
     res.send(employees);
   } catch (err) {
@@ -26,7 +22,11 @@ app.get('/api/employees', async (req, res, next) => {
 
 app.get('/api/departments', async (req, res, next) => {
   try {
-    res.send(await Department.findAll());
+    res.send(await Department.findAll({
+      include: {
+        model: Employee
+      }
+    }));
   } catch (err) {
     next(err);
   }
