@@ -4,33 +4,32 @@ const path = require('path');
 const db = require('./db');
 const { Department, Employee } = require('./db');
 
-
 app.use(require('body-parser').json());
 app.use('/dist', express.static(path.join(__dirname, 'dist')));
-app.get('/', (req, res, next) => res.sendFile(path.join(__dirname, 'index.html')));
-
+app.get('/', (req, res, next) =>
+  res.sendFile(path.join(__dirname, 'index.html'))
+);
 
 app.get('/api/employees', async (req, res, next) => {
   try {
-    const employees = await Employee.findAll({
-    });
+    const employees = await Employee.findAll({ include: [Department] });
     res.send(employees);
   } catch (err) {
     next(err);
   }
-})
+});
 
 app.get('/api/departments', async (req, res, next) => {
   try {
-    res.send(await Department.findAll({
-      include: {
-        model: Employee
-      }
-    }));
+    res.send(
+      await Department.findAll({
+        include: [Employee],
+      })
+    );
   } catch (err) {
     next(err);
   }
-})
+});
 
 app.put('/api/employees/:id', async (req, res, next) => {
   try {
@@ -40,7 +39,7 @@ app.put('/api/employees/:id', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-})
+});
 
 app.delete('/api/employees/:id', async (req, res, next) => {
   try {
@@ -50,18 +49,17 @@ app.delete('/api/employees/:id', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-})
-
+});
 
 const init = async () => {
-  try{
+  try {
     await db.syncAndSeed();
 
-    const port = process.env.PORT || 3003;
+    const port = process.env.PORT || 3000;
     app.listen(port, () => {
       console.log(`Listening on port: ${port}!`);
-    })
-  } catch(err) {
+    });
+  } catch (err) {
     console.log(err);
   }
 };

@@ -1,56 +1,57 @@
 const Sequelize = require('sequelize');
-const db = new Sequelize(process.env.DATABASE_URL || 'postgres://localhost/acme_employees');
+const db = new Sequelize(
+  process.env.DATABASE_URL || 'postgres://localhost/acme_db'
+);
 const { STRING } = Sequelize;
 
 const faker = require('faker');
-
 
 const Department = db.define('department', {
   name: {
     type: STRING,
     allowNull: false,
   },
-})
+});
 
 const Employee = db.define('employee', {
   name: {
     type: STRING,
     allowNull: false,
   },
-})
+});
 
-Department.hasMany(Employee);
 Employee.belongsTo(Department);
-
+Department.hasMany(Employee);
 
 const syncAndSeed = async () => {
   await db.sync({ force: true });
-  const departmentPromises = [];
-  const employeePromises = [];
+  let promises = [];
 
-
-  while(departmentPromises.length < 5){
-    departmentPromises.push(
+  while (promises.length < 5) {
+    promises.push(
       Department.create({
-        name: faker.commerce.department()
+        name: faker.commerce.department(),
       })
-    )
+    );
   }
 
-  while(employeePromises.length < 50){
-    employeePromises.push(
+  const departments = await Promise.all(promises);
+  promises = [];
+
+  while (promises.length < 50) {
+    promises.push(
       Employee.create({
         name: faker.name.firstName(),
+        departmentId: faker.random.arrayElement(departments).id,
       })
-    )
+    );
   }
-  await Promise.all([departmentPromises, employeePromises]);
-
-}
+  await Promise.all(promises);
+};
 
 module.exports = {
-    db,
-    Department,
-    Employee,
-    syncAndSeed
-}
+  db,
+  Department,
+  Employee,
+  syncAndSeed,
+};
